@@ -154,11 +154,11 @@
                           "bottom"
                           "redshift"
                           "flameshot"
-                          "mpv"
+                          "mpv-nvidia" ; From Nonguix, .-nvidia Variant
                           "mpvpaper"
                           "sway-audio-idle-inhibit"
                           "imv"
-                          "steam" ; From Nonguix
+                          "steam-nvidia" ; From Nonguix, .-nvidia Variant
                           "cmus"
                           "alsa-utils"
                           "hyfetch"
