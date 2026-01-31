@@ -12,7 +12,7 @@
  (services (list (service home-zsh-service-type
                            (home-zsh-configuration
                             (environment-variables '(("PS1" . "  %~ ")
-                                                     ("EDITOR" . "guixmacs")))
+                                                     ("EDITOR" . "emacs")))
                             (zshrc (list (local-file "files/config/zshrc")))
                             )
                            )
