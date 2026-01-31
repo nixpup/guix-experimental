@@ -17,6 +17,7 @@ alias ols="sh -c 'ls $@'"
 alias pef="pfetch $@"
 alias q="exit"
 alias rebuild="sudo guix system reconfigure /etc/config.scm $@"
+alias garbage="guix gc && sudo guix system delete-generations 1d && guix package --delete-generations $@"
 alias shreddy="shred -z -u -v --iterations=1 $@"
 alias size="du -sh $@"
 alias tarShow="tar tvf $@"
@@ -173,6 +174,28 @@ gm() {
             guix package --delete-generations
             echo "[ Deleted Old Generations ]"
             ;;
+        rebuild|rb)
+            sudo guix system reconfigure /etc/config.scm
+            echo "[ Rebuilt System ]"
+            ;;
+        g|garbage|gc)
+            guix gc
+            sudo guix system delete-generations 1d
+            guix package --delete-generations
+            echo "[ Collected Garbage ]"
+            ;;
+        optimize)
+            guix gc --optimize
+            echo "[ Optimized /gnu/store ]"
+            ;;
+        home|hm)
+            guix home reconfigure /etc/home.scm
+            echo "[ Rebuilt Home ]"
+            ;;
+        lsc|listchannel|listchannels)
+            echo "[ Channels ]:"
+            guix describe
+            ;;
         *|h|help|"")
             cat <<EOF
 gm - guix manager
@@ -183,8 +206,13 @@ Usage:
   gm m|manifest <path/to/manifest.scm>      Install from Manifest
   gm i|install <packages>                   Install Packages
   gm p|pull|upgrade                         Upgrade/Pull latest Guix and Guix Packages
+  gm rebuild|rb                             Rebuild Guix System
+  gm g|garbage|gc                           Collect Garbage
+  gm optimize                               Optimize Gnu Store
   gm u|update|refresh                       Update/Refresh Package Definitions
+  gm home|hm                                Rebuild Guix Home
   gm l|ls|list                              List Installed Packages
+  gm lsc|listchannel(s)                     List/Describe Channels
   gm rmo|rmg|rmog                           Delete Old Generations
 EOF
             ;;
@@ -402,6 +430,12 @@ backup() {
   fi
   cp -r "$1" "$1.$(date +%Y%m%d_%H%M%S).backup"
 }
+clean() {
+  guix gc
+  sudo guix system delete-generations 1m
+  guix gc --optimize
+  guix package --delete-generations
+}
 
 # Guix Profile
 GUIX_PROFILE="$GUIX_PROFILE:$HOME/.config/guix/current"
@@ -414,3 +448,23 @@ source "$GUIX_PROFILE/etc/profile"
 
 # Zoxide
 eval "$(zoxide init zsh)"
+
+# Prompt
+if [[ -n "$IN_NIX_SHELL" ]]; then
+  PROMPT='  nix-shell %~ '
+  PS1='  nix-shell %~ '
+else
+  PROMPT='  %~ '
+  PS1='  %~ '
+fi
+if [[ -n "$GUIX_ENVIRONMENT" ]]; then
+  PROMPT='  guix-shell %~ '
+  PS1='  guix-shell %~ '
+fi
+
+# Source Scripts
+if [ -d "$HOME/.scripts/shell" ]; then
+  for script in "$HOME/.scripts/shell"/*; do
+    [ -f "$script" ] && source "$script"
+  done
+fi

@@ -13,40 +13,40 @@
                            (home-zsh-configuration
                             (environment-variables '(("PS1" . "  %~ ")
                                                      ("EDITOR" . "emacs")))
-                            (zshrc (list (local-file "files/config/zshrc")))
+                            (zshrc (list (local-file (string-append (current-source-directory) "/files/config/zshrc"))))
                             )
                            )
                  (simple-service 'mpv-config
                                  home-files-service-type
-                                 `((".config/mpv" ,(local-file "files/config/mpv"
-                                                               #:recursive? #t))))
+                                 `((".config/mpv" ,(local-file (string-append (current-source-directory) "/files/config/mpv"
+                                                               #:recursive? #t)))))
                  (simple-service 'discord-config
                                  home-files-service-type
-                                 `((".config/vesktop" ,(local-file "files/config/discord"
-                                                                   #:recursive? #t))))
+                                 `((".config/vesktop" ,(local-file (string-append (current-source-directory) "/files/config/discord"
+                                                                   #:recursive? #t)))))
                  (simple-service 'fastfetch-config
                                  home-files-service-type
-                                 `((".config/fastfetch" ,(local-file "files/config/fastfetch"
-                                                                     #:recursive? #t))))
+                                 `((".config/fastfetch" ,(local-file (string-append (current-source-directory) "/files/config/fastfetch"
+                                                                     #:recursive? #t)))))
                  (simple-service 'hyprlock-config
                                  home-files-service-type
-                                 `((".config/hyprlock" ,(local-file "files/config/hyprlock"
-                                                                    #:recursive? #t))))
+                                 `((".config/hyprlock" ,(local-file (string-append (current-source-directory) "/files/config/hyprlock"
+                                                                    #:recursive? #t)))))
                  (simple-service 'kitty-config
                                  home-files-service-type
-                                 `((".config/kitty" ,(local-file "files/config/kitty"
-                                                                 #:recursive? #t))))
+                                 `((".config/kitty" ,(local-file (string-append (current-source-directory) "/files/config/kitty"
+                                                                 #:recursive? #t)))))
                  (simple-service 'waybar-config
                                  home-files-service-type
-                                 `((".config/waybar" ,(local-file "files/config/waybar"
-                                                                  #:recursive? #t))))
+                                 `((".config/waybar" ,(local-file (string-append (current-source-directory) "/files/config/waybar"
+                                                                  #:recursive? #t)))))
                  (simple-service 'zathura-config
                                  home-files-service-type
-                                 `((".config/zathura" ,(local-file "files/config/zathura"
-                                                                   #:recursive? #t))))
+                                 `((".config/zathura" ,(local-file (string-append (current-source-directory) "/files/config/zathura"
+                                                                   #:recursive? #t)))))
                  (simple-service 'btop-config
                                  home-files-service-type
-                                 `((".config/btop" ,(local-file "files/config/btop"
-                                                                #:recursive? #t))))
+                                 `((".config/btop" ,(local-file (string-append (current-source-directory) "/files/config/btop"
+                                                                #:recursive? #t)))))
                  ))
  )

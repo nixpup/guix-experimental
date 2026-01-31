@@ -1,4 +1,4 @@
-(define-module (naitre)
+(define-module (files packages NaitreHUD package)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix gexp)
@@ -22,7 +22,8 @@
   (package
     (name "naitre")
     (version "git")
-    (source (local-file "." "naitre-checkout"
+    ;;(source (local-file "." "naitre-checkout"
+    (source (local-file (dirname (current-filename)) "naitre-checkout"
                         #:recursive? #t
                         #:select? (or (git-predicate (current-source-directory))
                                       (const #t))))

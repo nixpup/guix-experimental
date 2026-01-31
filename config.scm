@@ -1,3 +1,5 @@
+(add-to-load-path (dirname (current-filename)))
+
 (use-modules (gnu)
              (gnu system)
              (gnu system nss)
@@ -19,7 +21,7 @@
              (nongnu services nvidia)
              (nongnu system linux-initrd)
              ;; Custom Modules/Packages
-             (files packages package))
+             (files packages NaitreHUD package))
 (use-service-modules desktop networking ssh xorg dbus)
 (use-package-modules wm bootloaders certs shells editors version-control xorg pipewire)
 
@@ -44,6 +46,10 @@
 ;;    'guix gc --optimize'
 ;;  + Reconfigure Guix Home:
 ;;    'guix home reconfigure /etc/home.scm'
+;;  + Describe/List Channels:
+;;    'guix describe'
+;;  + Upgrade Packages:
+;;    'guix upgrade'
 ;;---
 ;; Reformat/Style Scheme File:
 ;;  'guix style -f config.scm'
@@ -117,6 +123,7 @@
                           "polybar"
                           "btop"
                           "git"
+                          "curl"
                           "emacs"
                           "nss-certs"
                           "firefox"
