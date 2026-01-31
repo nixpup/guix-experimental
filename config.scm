@@ -16,10 +16,11 @@
              (gnu services networking)
              (gnu utils)
              ;; Nonguix Modules
-             (nongnu packages nvidia)
              (nongnu packages linux)
+             (nongnu packages nvidia)
              (nongnu services nvidia)
              (nongnu system linux-initrd)
+             (nonguix transformations)
              ;; Custom Modules/Packages
              (files packages NaitreHUD package))
 (use-service-modules desktop networking ssh xorg dbus)
@@ -56,10 +57,17 @@
 ;;  - This can help to find syntax errors, such as misplaced brackets, easier.
 ;;---
 
-(operating-system
+; Added ((compose (nonguix-transformation-nvidia)) - Experimental!
+; If to be removed, remember to remove last bracket at end of file as well.
+(((compose (nonguix-transformation-nvidia))(operating-system
  (kernel linux)
  (initrd microcode-initrd)
  (firmware (list intel-microcode linux-firmware %base-firmware))
+ ;; Nvidia
+ (kernel-arguments (append
+                    '("modprobe.blacklist=nouveau")
+                    %default-kernel-arguments))
+ (kernel-loadable-modules (list nvidia-driver))
  (host-name "guix")
  (timezone "Europe/Berlin")
  (locale "en_US.utf8")
@@ -124,6 +132,7 @@
                           "polybar"
                           "btop"
                           "git"
+                          "wpa-supplicant"
                           "curl"
                           "emacs"
                           "nss-certs"
@@ -210,6 +219,21 @@
                           "discord" ; From Git Repo
                           ))))
 
+ ;;---
+ ;; WiFi Configuration:
+ ;; + 'rfkill unblock all'
+ ;; + 'ifconfig -a' | Find WiFi Device/Cards Name
+ ;; + 'wpa_supplicant -c wifi.conf -i interface1s0 -B'
+ ;; + 'dhclient -v interface1s0'
+ ;;---
+ ;; wifi.conf:
+ ;; + network={
+ ;; +   ssid="ssid-name"
+ ;; +   ket_mgmt=WPA-PSK
+ ;; +   psk="password"
+ ;; + }
+ ;;---
+
  ;; Services
  (services
   (append
@@ -218,6 +242,11 @@
              (gdm-configuration
              (wayland? #t)))
     (service nvidia-driver-service-type)
+    (service kernel-module-loader-service-type
+             '("ipmi_devintf"
+               "nvidia"
+               "nvidia_modeset"
+               "nvidia_uvm"))
     (service nix-service-type)
     (service pipewire-service-type)
     (service alsa-service-type
@@ -250,4 +279,5 @@
                                             (inherit config)
                                             (auto-login "puppy"))))
    ))
+ )
  )
