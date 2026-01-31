@@ -1,0 +1,416 @@
+# Aliases
+alias l="eza --icons $@"
+alias la="eza --icons -l -r -A -T -L=1 $@"
+alias ll="eza --icons -a $@"
+alias ls="eza --icons $@"
+alias lsa="ls -lah"
+alias lsbOsRelease="lsb_release -sd $@"
+alias lsfind="find . -name '$@'"
+alias md="mkdir -p $@"
+alias mp3="yt-dlp -x --audio-format mp3 -o '%(uploader)s - %(title)s' $@"
+alias ns="guix shell $@"
+alias of="onefetch --nerd-fonts $@"
+alias ol="sh -c 'ls $@'"
+alias ola="sh -c 'ls -r -A $@'"
+alias oldgrep="grep $@"
+alias ols="sh -c 'ls $@'"
+alias pef="pfetch $@"
+alias q="exit"
+alias rebuild="sudo guix system reconfigure /etc/config.scm $@"
+alias shreddy="shred -z -u -v --iterations=1 $@"
+alias size="du -sh $@"
+alias tarShow="tar tvf $@"
+alias tarUnzip="tar xvf $@"
+alias tarZip="echo 'Arg1: Archive.tar.gz, Arg2: Full Path of the Folder';tar -czvf $@"
+alias weather="curl wttr.in/Berlin $@"
+alias wetter="curl wttr.in/Berlin $@"
+alias wp="feh --bg-fill $@"
+alias zipCreate="echo 'Arg1: Archive.zip, Arg2: Folder/';zip -r $@"
+
+# Functions
+random() {
+  local len
+  if [ -z "$1" ]; then
+    len=12
+  else
+    len="$1"
+  fi
+  head /dev/urandom | tr -dc A-Za-z0-9 | head -c "$len"
+  echo
+}
+password() {
+  local len
+  local file="/mnt/Files/Temp/RandomPasswords.DD"
+  if [ -z "$1" ]; then
+    len=24
+    local pass=$(openssl rand -base64 24)
+  else
+    len="$1"
+    local pass=$(openssl rand -base64 "$len")
+  fi
+  if ! [ -e "$file" ]; then
+    touch "$file"
+  fi
+  echo "$pass" >> /mnt/Files/Temp/RandomPasswords.DD
+  echo -e "Printed Password to /mnt/Files/Temp/RandomPasswords.DD.\nPassword: $pass"
+}
+cryptmount() {
+  if [[ -z "$1" ]]; then
+    echo "Type cryptmount /dev/DRIVE."
+    return 1
+  fi
+  DRIVE="$1"
+  doas cryptsetup --type luks open "$DRIVE" encrypted || {
+    echo " Failed to open encrypted container."
+    return 1
+  }
+  doas mount -t ext4 /dev/mapper/encrypted /mounted || {
+    echo "Failed to mount."
+    return 1
+  }
+}
+cryptunmount() {
+  doas umount /mounted
+  doas cryptsetup close encrypted
+}
+extramount() {
+  doas cryptsetup open /dev/sda2 extradisk
+  doas mount /dev/mapper/extradisk /extra
+}
+extraunmount() {
+  doas umount /extra
+  doas cryptsetup close extradisk
+}
+extract() {
+  for archive in "$@"; do
+    case "$archive" in
+      *.tar.bz2)   tar xjf "$archive"   ;;
+      *.tar.gz)    tar xzf "$archive"   ;;
+      *.tar.xz)    tar xJf "$archive"   ;;
+      *.tar.zst)   unzstd "$archive" | tar xf - ;;
+      *.tar)       tar xf "$archive"    ;;
+      *.bz2)       bunzip2 "$archive"   ;;
+      *.gz)        gunzip "$archive"    ;;
+      *.zip)       unzip "$archive"     ;;
+      *.7z)        7z x "$archive"      ;;
+      *.rar)       unrar x "$archive"   ;;
+      *)           echo "Don't know how to extract $archive." ;;
+    esac
+  done
+}
+disks() {
+  case "$1" in
+    type)
+      watch -n 1 lsblk -f
+      ;;
+    ext)
+      watch -n 1 lsblk -f
+      ;;
+    fdisk)
+      doas watch -n 1 fdisk -l
+      ;;
+    *)
+      watch -n 1 lsblk
+      ;;
+  esac
+}
+gm() {
+    arg1="$1"
+    [ "$#" -gt 0 ] && shift
+    argRest=("$@")
+    case "$arg1" in
+        u|update|refresh)
+            guix refresh
+            echo "[ Updeated/Refreshed Package Cache and Definitions ]"
+            ;;
+        p|pull|upgrade)
+            guix pull
+            printf "[ Restart Guix Daemon? ] (y/n) ~> "
+            read -r restartGuixService
+            if [ "$restartGuixService" = "y" ]; then
+                doas systemctl restart guix-daemon.service
+            else
+                return 1
+            fi
+            ;;
+        l|ls|list)
+            echo "[ Installed Packages ]:"
+            guix package --list-installed
+            ;;
+        i|install)
+            if  [ "${#argRest[@]}" -eq 0 ]; then
+                echo "[ Please provide Packages to Install ]"
+                return 1
+            fi
+            guix install "${argRest[@]}"
+            echo -e "[ Successfully Installed Packages ]\n(Packages: ${argRest[@]})"
+            ;;
+        m|manifest)
+            if [ "${#argRest[@]}" -eq 0 ]; then
+                echo "[ Please provide a Manifest File ]"
+                echo "example:"
+                echo "  gm m /etc/manifest.scm"
+                return 1
+            fi
+            guix package --manifest="${argRest[@]}"
+            echo -e "[ Successfully Installed Packages from Manifest ]\n(File: ${argRest[@]})"
+            ;;
+        r|rm|remove)
+            if [ "${#argRest[@]}" -eq 0 ]; then
+                echo "[ Please provide Packages to Remove ]"
+                return 1
+            fi
+            guix remove "${argRest[@]}"
+            ;;
+        s|shell)
+            if [ "${#argRest[@]}" -eq 0 ]; then
+                echo "[ Please provide Packages for the Shell ]"
+                return 1
+            fi
+            guix shell "${argRest[@]}"
+            ;;
+        rmo|rmg|rmog)
+            guix package --delete-generations
+            echo "[ Deleted Old Generations ]"
+            ;;
+        *|h|help|"")
+            cat <<EOF
+gm - guix manager
+
+Usage:
+  gm s|shell <packages>                     Create Guix Shell with Packages
+  gm r|rm|remove <packages>                 Remove Packages
+  gm m|manifest <path/to/manifest.scm>      Install from Manifest
+  gm i|install <packages>                   Install Packages
+  gm p|pull|upgrade                         Upgrade/Pull latest Guix and Guix Packages
+  gm u|update|refresh                       Update/Refresh Package Definitions
+  gm l|ls|list                              List Installed Packages
+  gm rmo|rmg|rmog                           Delete Old Generations
+EOF
+            ;;
+    esac
+}
+mp4() {
+  yt-dlp -f bestvideo+bestaudio -o "%(title)s.%(ext)s" $@
+}
+mp4fallback() {
+  yt-dlp -f "bv*+ba/best" --merge-output-format mp4 --user-agent "Mozilla/5.0" --retries 20 -o "%(title)s.%(ext)s" $@
+}
+fkill() {
+  local line pid
+  # Pick a process
+  line=$(ps -ef | sed 1d | fzf) || return
+  pid=$(awk '{print $2}' <<< "$line") || return
+  # Ask for confirmation
+  echo "Selected: $line"
+  read -q "REPLY?Kill process $pid? [y/N] "
+  echo  # newline after read -q
+  if [[ "$REPLY" == [yY] ]]; then
+    kill -9 "$pid"
+    echo "Killed process $pid"
+  else
+    echo "Aborted."
+  fi
+}
+upload() {
+  case "$1" in
+    1)
+      curl --upload-file $2 https://dropcli.com/upload
+      ;;
+    2)
+      curl -T $2 -s -L -D - xfr.station307.com | grep human
+      ;;
+    *)
+      echo "Please choose either '1' or '2' for a file hoster."
+      ;;
+  esac
+}
+g() {
+  local cmd="$1"
+  local arg="$2"
+  case "$cmd" in
+    e|execute)
+      if [ -z "$arg" ]; then
+        echo "Usage: g execute <recipe>"
+        return 1
+      fi
+      if [[ "$arg" = "--help" || "$arg" = "help" || "$arg" = "h" || "$arg" = "recipes" ]]; then
+        echo "Available recipes: init, push"
+        return 0
+      fi
+      if [ "$arg" = "init" ]; then
+        echo "[ Initializing Git and Switching to 'main' Branch ]"
+        git init
+        git branch -M main
+        echo " "
+        echo "[          Enter Repository URL         ]"
+        echo "[ e.g. https://github.com/name/repo.git ]"
+        read -p "URL> " repoLink
+        if [ -z "$repoLink" ]; then
+          return 1
+        fi
+        echo " "
+        git remote add origin $repoLink
+        echo "[ Initialized Repo ]"
+      fi
+      if [ "$arg" = "push" ]; then
+        read -p "[ Add all Files in Directory to Repo? ] (y/n): " pushAddAnswer
+        if [ "$pushAddAnswer" = "y" ]; then
+          git add .
+          git add *
+          git add ./*
+          echo "[ Added all Files in Current Directory ]"
+        else
+          echo "[ Pushing current State of Repo ]"
+        fi
+        echo " "
+        read -p "[ Specify Branch? ('n' = 'main') ] (y/n) :" specifyBranch
+        if [ "$specifyBranch" = "y" ]; then
+          read -p "[ Enter Branch Name ]: " branchName
+          git branch -M $branchName
+        else
+          branchName="main"
+          git branch -M $branchName
+        fi
+        read -p "[ Enter Commit Message ]: " commitMessage
+        git commit -m "$commitMessage"
+        echo " "
+        echo "[ Pushing... ]"
+        git push -u origin $branchName
+      fi
+      ;;
+    c|clone)
+      if [ -z "$arg" ]; then
+        echo "Usage: g clone <repo-url>"
+        return 1
+      fi
+      git clone "$arg"
+      ;;
+    u|update)
+      if [ -z "$arg" ]; then
+        echo "g update adds a provided file to the git repo,"
+        echo "and then tries to commit it."
+        echo "Usage: g update <file>"
+        return 1
+      fi
+      git add "$arg"
+      printf "Commit Message: "
+      read -r commitMessage
+      git commit -m "$commitMessage"
+      ;;
+    p|push)
+      git push -u origin main
+      ;;
+    n|new)
+      git init
+      ;;
+    i|init)
+      git init
+      ;;
+    a|add)
+      if [ "$arg" = "all" ]; then
+        git add .
+      elif [ -z "$arg" ]; then
+        echo "Usage: g add <file>|all"
+        return 1
+      else
+        git add "$arg"
+      fi
+      ;;
+    aa|addall)
+      git add .
+      git add *
+      git add ./*
+      echo "[ Added all Files ]"
+      ;;
+    s|status)
+      echo "[ Status ]"
+      git status
+      echo "[ Remote Sources ]"
+      git remote -v
+      echo "[ Branches ]"
+      echo "$(git branch --list)"
+      ;;
+    co|cm|commit)
+      printf "[ Commit Message ]: ~> "
+      read -r commitMessage
+      if [ -z "$commitMessage" ]; then
+        return 1
+      fi
+      git commit -m "$commitMessage"
+      ;;
+    h|help|"")
+      cat <<EOF
+g - git helper function
+
+Usage:
+  g c|clone <url>        Clone a repository
+  g e|execute <recipe>   Execute pre-made recipes/instructions
+  g u|update <file>      Add file and commit with prompt
+  g p|push               Push to origin main
+  g n|new                Initialize a new repository
+  g i|init               Initialize a new repository
+  g a|add <file>         Add a file
+  g a|add all            Add all files
+  g aa                   Add all files
+  g co|cm|commit         Commit with specified Message
+  g s|status             Show various status reports/infos
+  g h|help               Show this help
+EOF
+      ;;
+    *)
+      echo "Unknown command: $cmd"
+      echo "Run 'g help' for usage."
+      return 1
+      ;;
+  esac
+}
+function c() {
+  if [[ $1 == d* ]]; then
+    local target="''${1#d}"
+    builtin cd "$target"
+  else
+    echo "Usage: c d<directory>"
+  fi
+}
+echoout() {
+  echo "$(<"$1")"
+}
+
+ports() {
+  doas ss -tulnp | awk '
+    NR==1 {print; next}
+    {printf "%-5s %-20s %-30s %-30s %s\n", $1, $5, $6, $7, $9}'
+}
+move() {
+  command mv "$@" &
+  pid=$!
+  progress -mp $pid
+  wait $pid
+}
+trash() {
+  local file="$1"
+  local dir="$HOME/.local/share/Trash/files"
+  mkdir -p "$dir"
+  mv "$file" "$dir"
+  echo "Moved $file to Trash."
+}
+backup() {
+  if [ -z "$1" ]; then
+    echo "Usage: backup <File>"
+    return 1
+  fi
+  cp -r "$1" "$1.$(date +%Y%m%d_%H%M%S).backup"
+}
+
+# Guix Profile
+GUIX_PROFILE="$GUIX_PROFILE:$HOME/.config/guix/current"
+. "$GUIX_PROFILE:$GUIX_PROFILE/etc/profile"
+GUIX_PROFILE="$GUIX_PROFILE:$HOME/.guix-profile"
+. "$GUIX_PROFILE:$GUIX_PROFILE/etc/profile"
+GUIX_PROFILE="$GUIX_PROFILE:/var/guix/profiles/per-user/puppy/guix-profile"
+. "$GUIX_PROFILE:$GUIX_PROFILE/etc/profile"
+source "$GUIX_PROFILE/etc/profile"
+
+# Zoxide
+eval "$(zoxide init zsh)"

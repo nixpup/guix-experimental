@@ -1,0 +1,11 @@
+{
+  "include": [
+    "~/.config/waybar/layout.jsonc",
+  ],
+  "style": "~/.config/waybar/style.css",
+  "reload_style_on_change": true,
+  "margin-top": 0,
+  "margin-right": 0,
+  "margin-bottom": 0,
+  "margin-left": 0,
+}
