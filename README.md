@@ -1,5 +1,4 @@
 # Guix Configuration
-![Guix Logo](https://guix.gnu.org/themes/initial/img/Guix-logo.png)
 ![Guix Banner](https://raw.githubusercontent.com/nixpup/guix-experimental/refs/heads/main/guixBanner.jpg)
 
 # Information
