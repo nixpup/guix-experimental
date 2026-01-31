@@ -1,5 +1,5 @@
 ;---
-; Copy this Channel File to '/etc/channels.scm' and '~/.config/guix/channels.scm'
+; Copy this Channel File to '/etc/guix/channels.scm' and '~/.config/guix/channels.scm'
 ;---
 (append (list (channel
         (name 'jack-faller)
