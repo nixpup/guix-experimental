@@ -234,7 +234,8 @@
                                          (append (list "https://ci.guix.gnu.org"
                                                "https://berlin.guix.gnu.org"
                                                "https://bordeaux.guix.gnu.org"
-                                               "https://substitutes.nonguix.org")
+                                               "https://substitutes.nonguix.org"
+                                               "https://hydra-guix-129.guix.gnu.org")
                                                  %default-substitute-urls))))
                     (mingetty-service-type config =>
                                            (mingetty-configuration
