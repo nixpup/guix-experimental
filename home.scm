@@ -47,6 +47,10 @@
                  (simple-service 'btop-config
                                  home-files-service-type
                                  `((".config/btop" ,(local-file (string-append (current-source-directory) "/files/config/btop"
-                                                                #:recursive? #t)))))
+                                                                               #:recursive? #t)))))
+                 (simple-service 'scripts-config
+                                 home-files-service-type
+                                 `((".scripts" ,(local-file (string-append (current-source-directory) "/files/scripts"
+                                                                           #:recursive? #t)))))
                  ))
  )

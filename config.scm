@@ -120,6 +120,7 @@
                           "ghc-xmonad-contrib"
                           "pipewire"
                           "wireplumber"
+                          "flatpak"
                           "polybar"
                           "btop"
                           "git"
