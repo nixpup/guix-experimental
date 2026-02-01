@@ -12,6 +12,7 @@
   #:use-module (gnu packages node)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages xml)
   #:use-module (gnu packages markup)
@@ -21,6 +22,8 @@
   #:use-module (gnu packages ninja)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages tls)
+  #:use-module (gnu packages gl)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu packages maths))
 
 (define-public vicinae
@@ -75,6 +78,8 @@
            qtwayland
            wayland
            libxml2
+           libglvnd
+           libxkbcommon
            ;; 'glaze' may need to be defined/imported if not in Guix upstream
            layer-shell-qt
            qtkeychain-qt6
