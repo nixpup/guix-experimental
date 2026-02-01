@@ -52,5 +52,9 @@
                                  home-files-service-type
                                  `((".scripts" ,(local-file (string-append (current-source-directory) "/files/scripts"
                                                                            #:recursive? #t)))))
+                 (simple-service 'wallpapers-config
+                                 home-files-service-type
+                                 `(("Pictures/Wallpapers" ,(local-file (string-append (current-source-directory) "/files/pictures"
+                                                                                      #:recursive? #t)))))
                  ))
  )
