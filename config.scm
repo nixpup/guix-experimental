@@ -174,6 +174,7 @@
                           "imagemagick"
                           "yt-dlp"
                           "wl-clipboard"
+                          "dank-material-shell"
                           "grim"
                           "grimblast"
                           "unrar-free"
