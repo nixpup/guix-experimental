@@ -139,6 +139,7 @@
                           "firefox"
                           "icecat"
                           "icedove"
+                          "guix-backgrounds"
                           "icedove-wayland"
                           "kitty"
                           "font-dejavu"
