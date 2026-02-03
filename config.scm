@@ -240,6 +240,7 @@
  (services
   (append
    (list
+    (service gnome-desktop-service-type)
     (service gdm-service-type
              (gdm-configuration
              (wayland? #t)))
