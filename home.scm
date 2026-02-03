@@ -16,6 +16,7 @@
                     emacs-erc-image
                     emacs-company
                     emacs-corfu
+                    emacs-corfu-terminal
                     emacs-simple-httpd
                     emacs-org
                     emacs-pabbrev

@@ -92,6 +92,8 @@ Enable a simple for of auto-completion preview using fancy dabbrev.
 ;(global-pabbrev-mode)
 (require 'corfu)
 (global-corfu-mode)
+(unless (display-graphic-p)
+  (corfu-terminal-mode +1))
 ;(global-set-key (kbd "TAB") 'corfu-expand) ;- or 'corfu-complete
 #+END_SRC
 ** Sudo-Edit
