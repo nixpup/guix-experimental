@@ -1,13 +1,50 @@
 (use-modules (gnu)
              (gnu home)
              (gnu home services)
-             (gnu home services shells))
+             (gnu home services shells)
+             (gnu packages)
+             (gnu packages emacs)
+             (gnu packages emacs-xyz)
+             (guix gexp))
 
 (home-environment
- (packages (specifications->packages
-            (list "zsh"
-                  "git"
-                  "emacs")))
+ (packages (append
+            (list
+             (emacs-with-packages
+              (list emacs-emms
+                    emacs-company
+                    emacs-use-package
+                    emacs-lsp-mode
+                    emacs-lsp-ui
+                    emacs-markdown-mode
+                    emacs-multi-term
+                    emacs-multiple-cursors
+                    emacs-nix-mode
+                    emacs-rainbow-mode
+                    emacs-rust-mode
+                    emacs-rustic
+                    emacs-wttrin
+                    emacs-hydra
+                    emacs-all-the-icons
+                    emacs-all-the-icons-dired
+                    emacs-haskell-mode
+                    emacs-arduino-mode
+                    emacs-flycheck
+                    emacs-bongo
+                    emacs-compat
+                    emacs-xelb
+                    emacs-iedit
+                    emacs-anzu
+                    emacs-visual-regexp
+                    emacs-sudo-edit
+                    emacs-pdf-tools
+                    emacs-magit
+                    emacs-beacon
+                    emacs-doom-modeline)))
+            (specifications->packages
+             (list "zsh"
+                   "git"))
+           )))
 
  (services (list (service home-zsh-service-type
                            (home-zsh-configuration
