@@ -72,6 +72,10 @@
                                  `((".guixmacs/themes" ,(local-file (string-append (current-source-directory) "/files/config/guixmacs/themes"
                                                                                    #:recursive? #t)))))
 
+                 (simple-service 'guixmacs-logo-config
+                                 home-files-service-type
+                                 `((".guixmacs/files/nix_emacs_logo_small.png" ,(local-file (string-append (current-source-directory) "/files/config/guixmacs/files/nix_emacs_logo_small.png")))))
+
                  (simple-service 'discord-config
                                  home-files-service-type
                                  `((".config/vesktop" ,(local-file (string-append (current-source-directory) "/files/config/discord"
