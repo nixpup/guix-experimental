@@ -12,7 +12,13 @@
             (list
              (emacs-with-packages
               (list emacs-emms
+                    emacs-erc
+                    emacs-erc-image
                     emacs-company
+                    emacs-corfu
+                    emacs-simple-httpd
+                    emacs-org
+                    emacs-pabbrev
                     emacs-use-package
                     emacs-lsp-mode
                     emacs-lsp-ui
@@ -56,7 +62,16 @@
                  (simple-service 'mpv-config
                                  home-files-service-type
                                  `((".config/mpv" ,(local-file (string-append (current-source-directory) "/files/config/mpv"
-                                                               #:recursive? #t)))))
+                                                                              #:recursive? #t)))))
+                 (simple-service 'dot-emacs-config
+                                 home-files-service-type
+                                 `((".emacs" ,(local-file (string-append (current-source-directory) "/files/config/guixmacs/emacs")))))
+
+                 (simple-service 'guixmacs-themes-config
+                                 home-files-service-type
+                                 `((".guixmacs/themes" ,(local-file (string-append (current-source-directory) "/files/config/guixmacs/themes"
+                                                                                   #:recursive? #t)))))
+
                  (simple-service 'discord-config
                                  home-files-service-type
                                  `((".config/vesktop" ,(local-file (string-append (current-source-directory) "/files/config/discord"

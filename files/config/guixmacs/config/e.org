@@ -29,7 +29,7 @@ This .e.org File is a complete Emacs configuration setup with auto-completion an
     #+END_EXAMPLE
 ...if you provided these two files, your fresh new Emacs should be ready to go and begin by automatically installing all the packages you need. After this process is done, you may need to restart Emacs once.
 * Packages and Related
-** Colorscheme and Font Size
+** Include Themes and set Font Size
 Setup the colorscheme and the font size.
 #+BEGIN_SRC emacs-lisp
   (custom-set-faces
@@ -37,6 +37,11 @@ Setup the colorscheme and the font size.
    )
   (add-to-list 'custom-theme-load-path  "~/.guixmacs/themes/")
   (set-face-attribute 'default nil :height 125)
+#+END_SRC
+** Theme/Colorscheme
+For all available themes, check the guixmacs themes directory (/home/<USERNAME>/.guixmacs/themes).
+#+BEGIN_SRC emacs-lisp
+(load-theme 'guix t)
 #+END_SRC
 ** General Settings
 #+BEGIN_SRC emacs-lisp
@@ -80,13 +85,14 @@ Enable and automatically load doom-modeline-mode.
 (use-package magit
   :ensure t)
 #+END_SRC
-** Fancy Dabbrev (Simple Auto-Completion)
+** Auto-Completion Popup Menu
 Enable a simple for of auto-completion preview using fancy dabbrev.
 #+BEGIN_SRC emacs-lisp
-(require 'fancy-dabbrev)
-(global-fancy-dabbrev-mode)
-(global-set-key (kbd "TAB") 'fancy-dabbrev-expand)
-(global-set-key (kbd "<backtab>") 'fancy-dabbrev-backward)
+;(require 'pabbrev)
+;(global-pabbrev-mode)
+(require 'corfu)
+(global-corfu-mode)
+;(global-set-key (kbd "TAB") 'corfu-expand) ;- or 'corfu-complete
 #+END_SRC
 ** Sudo-Edit
 #+BEGIN_SRC emacs-lisp
@@ -103,16 +109,13 @@ Enable a simple for of auto-completion preview using fancy dabbrev.
 This Chapter sets up auto-suggestions for various programming languages, and a language server connection.
 ** HTML Live-Reload and Server
 #+BEGIN_SRC emacs-lisp
-    (require 'simple-httpd)
-    (require 'impatient-mode)
-  (defun my/html-live-preview ()
-  "Start local HTTP server, enable impatient-mode, and open preview in browser."
-  (interactive)
-  (httpd-start)
-  (impatient-mode 1)
-  ;; Open browser tab with the impatient-mode preview URL
-  (browse-url "http://localhost:8080/imp/")
-  (message "🌐 Live preview opened at http://localhost:8080/imp/"))
+(require 'simple-httpd)
+(require 'impatient-mode)
+(defun my/html-live-preview ()
+"Start local HTTP server, enable impatient-mode, and open preview in browser."
+(interactive)
+(httpd-start)
+(message "🌐 Live preview opened at http://localhost:8080/imp/"))
 
 (defun my/html-bind-live-preview-key ()
   "Bind Ctrl+Shift+L to `my/html-live-preview` in HTML buffers only."
@@ -129,22 +132,6 @@ Set up a basic version of company.
 (global-company-mode 1)
 (setq company-idle-delay 0.1
       company-minimum-prefix-length 1)
-#+END_SRC
-*** Nickel LSP Mode
-#+BEGIN_SRC emacs-lisp
-(require 'nickel-mode)
-(require 'lsp-mode)
-
-(add-to-list 'lsp-language-id-configuration '(nickel-mode . "nickel"))
-  (lsp-register-client (make-lsp-client
-                           :new-connection (lsp-stdio-connection "nls")
-                           :activation-fn (lsp-activate-on "nickel")
-                           :server-id 'nls
-                           :major-modes '(nickel-mode)
-                           :initialization-options (lambda ()
-						     ;; pass empty object to use default config
-						     (list :eval (make-hash-table)))))
-(add-hook 'nickel-mode-hook #'lsp-deferred)
 #+END_SRC
 *** Rust LSP Mode
 Configure auto-suggestions for the Rust programming language.
@@ -164,19 +151,6 @@ Configure auto-suggestions for the Rust programming language.
 ;;(setq lsp-rust-analyzer-server-command '("rust-analyzer"))
 (require 'rustic)
 (setq rustic-lsp-client 'lsp-mode)
-#+END_SRC
-*** Hoon Mode and Recognition
-Set up Hoon syntax highlighting with hoon-mode and the included rune dictionary.
-#+BEGIN_SRC emacs-lisp
-  (require 'hoon-mode)
-  (add-to-list 'auto-mode-alist '("\\.hoon\\'" . hoon-mode))
-  (with-eval-after-load 'hoon-mode
-    (require 'hoon-mode)
-    (add-hook 'hoon-mode-hook
-              (lambda ()
-                (define-key hoon-mode-map (kbd "C-c r") 'hoon-eval-region-in-herb)
-                (define-key hoon-mode-map (kbd "C-c b") 'hoon-eval-buffer-in-herb))))
-    (add-to-list 'auto-mode-alist '("\\.hoon\\'" . hoon-mode))
 #+END_SRC
 *** Nix
 **** Recognition
@@ -399,7 +373,7 @@ Here we set up the tab bar for using tabs inside emacs.
   (tab-bar-mode 1))
   ;; Bind it globally
   (global-set-key (kbd "C-c h") #'my/tab-bar-toggle)
-  (vim-tab-bar-mode)
+  ;(vim-tab-bar-mode)
 #+END_SRC
 * Extra Programs
 ** ERC Configuration
@@ -409,23 +383,27 @@ This configures the ERC IRC client, change these values such as erc-nick and erc
       erc-nick "nixpup"
       erc-user-full-name "nixpup"
       erc-track-shorten-start 8
-      erc-autojoin-channels-alist '(("irc.libera.chat" "#nixos"))
+      erc-autojoin-channels-alist '(("irc.libera.chat" "#guix"))
       erc-kill-buffer-on-part t
       erc-auto-query 'bury)
+
+(require 'erc-image)
+(add-to-list 'erc-modules 'image)
+(erc-update-modules)
 #+END_SRC
 ** Bongo Configuration
 #+BEGIN_SRC emacs-lisp
-      (require 'bongo)
-      (setq bongo-default-browser-function 'bongo-dired-browser)
-      (setq bongo-enabled-backends '(mpv))
-      (setq bongo-default-backend 'mpv)
-      (setq bongo-mpv-program "mpv"
-          bongo-mpv-default-options '("--no-video"))
-    (defun my-bongo-autoload-directory ()
-    (when (and (eq major-mode 'bongo-playlist-mode)
-               (= (buffer-size) 0))
-      (bongo-insert-directory "~/Music")))
-  (add-hook 'bongo-playlist-mode-hook #'my-bongo-autoload-directory)
+(require 'bongo)
+(setq bongo-default-browser-function 'bongo-dired-browser)
+(setq bongo-enabled-backends '(mpv))
+(setq bongo-default-backend 'mpv)
+(setq bongo-mpv-program "mpv"
+    bongo-mpv-default-options '("--no-video"))
+(defun my-bongo-autoload-directory ()
+(when (and (eq major-mode 'bongo-playlist-mode)
+           (= (buffer-size) 0))
+  (bongo-insert-directory "~/Music")))
+(add-hook 'bongo-playlist-mode-hook #'my-bongo-autoload-directory)
 #+END_SRC
 ** EMMS Configuration
 Now we set up EMMS to listen to music inside of emacs.
@@ -459,13 +437,6 @@ Enable multiple cursors when pressing Ctrl+Shift+> and other keybinds to edit mu
   (if multiple-cursors-mode
       (mc/execute-command-for-all-cursors 'backward-delete-char-untabify)
     (call-interactively 'backward-delete-char-untabify)))
-;; Fix Tab
-(defun my/fancy-dabbrev-tab ()
-  "Expand with fancy-dabbrev on TAB."
-  (global-set-key (kbd "TAB") 'fancy-dabbrev-expand))
-(add-hook 'prog-mode-hook 'my/fancy-dabbrev-tab)
-(add-hook 'text-mode-hook 'my/fancy-dabbrev-tab)
-(global-set-key (kbd "TAB") 'fancy-dabbrev-expand)
 (setq ffap-bindings nil)
 (define-key mc/keymap (kbd "DEL") 'mc/backspace)
 
@@ -507,7 +478,7 @@ Here is the setup for the splash screen every time you start up emacs, and the i
                (vertical-offset (/ window-height 6)))
           (insert (make-string vertical-offset ?\n))
           (when (display-graphic-p)
-            (let ((image (create-image (or (getenv "NIXMACS_LOGO_PATH") "/nix/store/kpyllsr5w4618ga2js1yykg47nb0pjpm-nix_emacs_logo_small.png") nil nil :ascent 'center)))
+            (let ((image (create-image (or (getenv "NIXMACS_LOGO_PATH") "~/.guixmacs/files/nix_emacs_logo_small.png") nil nil :ascent 'center)))
               (when image
                 (let* ((image-width (round (car (image-size image))))
                        (padding (make-string (max 0 (/ (- window-width image-width) 2)) ?\ )))
@@ -520,11 +491,11 @@ Here is the setup for the splash screen every time you start up emacs, and the i
             (insert padding text "\n"))
           (let* ((lists '(("m" "EMMS")
                           ("i" "i3 configuration file")
+                          ("g" "guix configuration file")
                           ("e" "emacs configuration file")
-                          ("n" "nixos configuration file")
                           ("x" "xmonad configuration file")
                           ("p" "polybar configuration file")
-                          ("h" "home-manager configuration file")
+                          ("h" "guix-home configuration file")
   			  ("q" "quit emacs"))))
   	  (dolist (item lists)
               (let* ((key (car item))
@@ -546,6 +517,9 @@ Here is the setup for the splash screen every time you start up emacs, and the i
       (local-set-key (kbd "m") (lambda () (interactive)
   			       (kill-buffer "*apps*")
   			       (call-interactively 'emms-browser)))
+      (local-set-key (kbd "n") (lambda () (interactive)
+               (kill-buffer "*apps*")
+               (find-file "~/.config/naitre/main.conf")))
       (local-set-key (kbd "i") (lambda () (interactive)
   			       (kill-buffer "*apps*")
   			       (find-file "~/.config/i3/config")))
@@ -554,22 +528,18 @@ Here is the setup for the splash screen every time you start up emacs, and the i
   			       (find-file "~/.xmonad/xmonad.hs")))
       (local-set-key (kbd "e") (lambda () (interactive)
   			       (kill-buffer "*apps*")
-  			       (find-file "~/.e.org")))
+  			       (find-file "~/.guixmacs/config/e.org")))
       (local-set-key (kbd "p") (lambda () (interactive)
   			       (kill-buffer "*apps*")
   			       (find-file "~/.config/polybar/config.ini")))
-      (local-set-key (kbd "n") (lambda () (interactive)
+      (local-set-key (kbd "g") (lambda () (interactive)
   			       (kill-buffer "*apps*")
   			       (interactive)
-  			       (find-file "/sudo::/etc/nixos/configuration.nix")))
-      (local-set-key (kbd "f") (lambda () (interactive)
-  			       (kill-buffer "*apps*")
-  			       (interactive)
-  			       (find-file "/sudo::/etc/nixos/flake.nix")))
+  			       (find-file "/sudo::/etc/guix/config.scm")))
       (local-set-key (kbd "h") (lambda () (interactive)
   			       (kill-buffer "*apps*")
   			       (interactive)
-  			       (find-file "/sudo::/etc/nixos/home.nix")))
+  			       (find-file "/sudo::/etc/guix/home.scm")))
       (local-set-key (kbd "q") (lambda () (interactive)
   			       (kill-buffer "*apps*")
   			       (call-interactively 'save-buffers-kill-terminal))))
@@ -591,7 +561,7 @@ Here is the setup for the splash screen every time you start up emacs, and the i
             (insert (make-string vertical-offset ?\n))
             ;; Insert and center the image
             (when (display-graphic-p)
-              (let ((image (create-image (or (getenv "NIXMACS_LOGO_PATH") "/nix/store/kpyllsr5w4618ga2js1yykg47nb0pjpm-nix_emacs_logo_small.png") nil nil :ascent 'center)))
+              (let ((image (create-image (or (getenv "NIXMACS_LOGO_PATH") "~/.guixmacs/files/nix_emacs_logo_small.png") nil nil :ascent 'center)))
                 (when image
                   (let* ((image-width (round (car (image-size image))))  ; Convert to integer
                          (padding (make-string (max 0 (/ (- window-width image-width) 2)) ?\ )))
@@ -642,14 +612,11 @@ Here is the setup for the splash screen every time you start up emacs, and the i
                             (kill-buffer "*splash*")))
       (local-set-key (kbd "e") (lambda () (interactive)
   			       (kill-buffer "*splash*")
-  		               (find-file "~/.e.org")))
-      (local-set-key (kbd "n") (lambda () (interactive)
+  		               (find-file "~/.guixmacs/config/e.org")))
+      (local-set-key (kbd "g") (lambda () (interactive)
   			       (kill-buffer "*splash*")
-  			       (find-file "/etc/nixos/configuration.nix")))
-      (local-set-key (kbd "f") (lambda () (interactive)
-  			       (kill-buffer "*splash*")
-  			       (interactive)
-  			       (find-file "/sudo::/etc/nixos/flake.nix")))
+               (interactive)
+  			       (find-file "/sudo::/etc/guix/config.scm")))
       (local-set-key (kbd "i") (lambda () (interactive)
   			       (kill-buffer "*splash*")
   			       (find-file "~/.config/i3/config")))
@@ -667,13 +634,12 @@ Here is the setup for the splash screen every time you start up emacs, and the i
   			       (switch-to-buffer "*apps*")))
   			       ;;(switch-to-buffer apps-buffer)))
       (local-set-key (kbd "n") (lambda () (interactive)
-  			       (application-buffer)
-  			       (interactive)
-  			       (find-file "/sudo::/etc/nixos/configuration.nix")))
+               (kill-buffer "*apps*")
+               (find-file "~/.config/naitre/main.conf")))
       (local-set-key (kbd "h") (lambda () (interactive)
   			       (application-buffer)
   			       (interactive)
-  			       (find-file "/sudo::/etc/nixos/home.nix")))
+  			       (find-file "/sudo::/etc/guix/home.scm")))
       (local-set-key (kbd "t") (lambda () (interactive)
   			       (kill-buffer "*splash*")
   			       (find-file "~/Documents/temp.org")))
@@ -752,7 +718,3 @@ The org insert helper is what we use to show the available options defined previ
 A little thank you from me (nixpup) for using my Emacs configuration, and/or other configurations and files I provide online. It really means a lot to me, happy hacking! :3
 
 [[https://codeberg.org/nixpup/NixOS/raw/branch/main/Pictures/astolfo_crown_small.png]]
-* Theme/Colorscheme
-#+BEGIN_SRC emacs-lisp
-(load-theme 'guix t)
-#+END_SRC
