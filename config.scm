@@ -262,10 +262,8 @@
       (modules (cons nvidia-driver %default-xorg-modules))
       (drivers '("nvidia")))))
 
-   (modify-services %desktop-services
-                    (delete pulseaudio-service-type))
-
-   (modify-services %base-services ;; or: %desktop-services
+   (modify-services %desktop-services ;; or: %desktop-service
+                    (delete pulseaudio-service-type)
                     (guix-service-type config =>
                                        (guix-configuration
                                         (inherit config)
@@ -279,7 +277,8 @@
                     (mingetty-service-type config =>
                                            (mingetty-configuration
                                             (inherit config)
-                                            (auto-login "puppy"))))
+                                            (auto-login "puppy")))
+                    )
    ))
  )
  )
